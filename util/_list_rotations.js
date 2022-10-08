@@ -3,7 +3,7 @@ import { replyFailed, replySuccess } from './util'
 
 export async function listRotations(res) {
     try{
-        let results = await rotationDb.getRotations()
+        let results = await rotationDb.getAllRotations()
     
         replySuccess(res, "OK!, these are the created rotations:"+JSON.stringify(results))
     } catch(err) {

@@ -5,11 +5,15 @@ import { createRotation} from "../../util/_create_rotation"
 import { listRotations } from "../../util/_list_rotations"
 import { schedule } from "../../util/_schedule"
 import { addUsers } from "../../util/addUsers"
+import { override } from "../../util/_override"
+import { updateRotationOnSchedule, updateRotationsOnSchedule } from "../../util/_update_on_schedule"
 
 export default function handler(req, res) {
   const commandArray = tokenizeString(req.body.text)
   const action = commandArray[0]
   const args = commandArray.slice(1,commandArray.length)
+  
+  console.log("command", action)
   console.log("args", args)
   
   switch (action) {
@@ -24,6 +28,12 @@ export default function handler(req, res) {
       break
     case 'schedule':
       schedule(res,args)
+      break
+    case 'override':
+      override(res,args)
+      break
+    case 'runUpdate':
+      updateRotationsOnSchedule(res, args)
       break
     default:
       res.send({

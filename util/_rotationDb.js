@@ -17,32 +17,46 @@ import { redis } from '../util/_constants'
 const ROTATION_KEY = "keys"
 
 export const rotationDb = {
-    getRotationsFromRedis: async function (redis, rotationName){    
+    getRotation: async function (rotationName){    
         const entries = await redis.smembers(ROTATION_KEY);
         console.log('entries', JSON.stringify(entries))
-        
+        if(entries.length == 0)
+            return undefined
         const p = redis.pipeline();
             entries.forEach((id) => {
               if(id==rotationName) p.hgetall(id);
             });
-            const results = await p.exec();
-            return results
+        const results = await p.exec();
+        if(results.length==0){
+            return undefined
+          }
+        console.log("results", results)
+        return results[0]
     },
     rotationExists: async function(name){
         const entries = await redis.smembers(ROTATION_KEY)
           console.log('data from fetch:', entries)          
-          let rotationName = entries.filter(rotationName => rotationName == name);
-          return rotationName.length!=0
+          let rotations = entries.filter(rotationName => rotationName == name);
+
+          if(rotations.length==0){
+            return undefined
+          }
+
+          return rotations[0]
     },
-    addRotation: async function(model){
-        let rotationExists = await rotationDb.rotationExists(model.name)
-        if(rotationExists) {
+    addRotation: async function(name, usergroup){
+        let model = {
+            name:String(name),
+            usergroup: JSON.stringify(usergroup),
+        }
+        let rotationExists = await rotationDb.rotationExists(name)
+        if(!rotationExists===undefined) {
             throw "Rotation already exists"
         }        
-        const redisData = await redis.hset(model.name, model)
-        await redis.sadd(ROTATION_KEY, model.name)
+        const redisData = await redis.hset(name, model)
+        await redis.sadd(ROTATION_KEY, name)
     },
-    getRotations: async function(){
+    getAllRotations: async function(){
         const entries = await redis.smembers(ROTATION_KEY);
 
         const p = redis.pipeline();
@@ -50,5 +64,10 @@ export const rotationDb = {
           p.hgetall(id);
         });
         return await p.exec();
+    },
+    updateRotation: async function(rotation) {
+        if(rotation.name===undefined)
+            throw "rotations must have a name"
+        const redisData = await redis.hset(rotation.name, rotation)
     }
 }

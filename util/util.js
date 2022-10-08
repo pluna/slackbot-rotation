@@ -1,4 +1,4 @@
-export function replyFailed(err, res) {
+export function replyFailed(res, err) {
     console.log('fetch Error:', err);
     res.send({
         response_type: 'ephemeral',

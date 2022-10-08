@@ -11,18 +11,20 @@ export async function createRotation(res, commandArray) {
       let name = commandArray[0]
       
       try {
-        let model = {
-            name:String(name),
-            usergroupId: JSON.stringify(usergroup.usergroup),
-        }
+        //Error if rotation already exists.
+        let rotationExists = await rotationDb.getRotation(name)
+        if(!rotationExists===undefined) {
+            throw "Rotation already exists"
+        }        
 
-        await rotationDb.addRotation(model)
-        
-        console.log("slack time")        
-        await slack.createUserGroup(name)
+        console.log("create usergroup in slack")        
+        let usergroup = await slack.createUserGroup(name)
+
+        console.log("persist rotation")
+        await rotationDb.addRotation(name, usergroup)
           
-        replySuccess(res, `Successfully created usergroup ${name}`)
+        replySuccess(res, `Great!, I created the rotation ${name}`)
       } catch (err) {
-          replyFailed(err, res)
+          replyFailed(res, err)
       }
 }

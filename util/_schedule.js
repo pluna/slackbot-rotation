@@ -1,21 +1,21 @@
-import { getRotationsFromRedis, redis} from '../util/_constants'
-import { replyFailed, replySuccess, getNextDayOfTheWeek } from './util'
+import { replyFailed, replySuccess, getNextDayOfTheWeek, findNextUser } from './util'
 import { slack } from '../util/_slack'
+import { rotationDb } from './_rotationDb'
+import { updateRotationOnSchedule } from './_update_on_schedule'
 
 export async function schedule(res, args) {    
     try{
         let key = args[0]
         console.log("key", key)
     
-        //To run multiple queries at once, Upstash supports the use of the pipeline command. This way we can run multiple queries at once and get the results in a single call.
-        let results = await getRotationsFromRedis(redis, key)
+        let rotation = await rotationDb.getRotation(key)
 
-        if(results.length == 0) {
+        if(rotation===undefined) {
             throw "Couldn't find rotation"
         }
-        console.log("results", results)
 
-        let rotation = results[0]
+        if(rotation.users === undefined || rotation.users.length==0)
+            throw "Rotation needs at least one user to be scheduled"
 
         let is_fortnightly = args[2]=="other"
         let index = 2 + (is_fortnightly?1:0)
@@ -27,18 +27,21 @@ export async function schedule(res, args) {
 
         rotation.schedule = data
 
+        console.log("rotation", JSON.stringify(rotation))
+
         //Calculate next rotation
-        var next = getNextDayOfTheWeek(data.day, data.hour, is_fortnightly);
+        var next = getNextDayOfTheWeek(data.day, data.hour, is_fortnightly)
 
-        console.log('next', next)
         rotation.next = next.toISOString()
+        rotation.active = true
 
-        const redisData = await redis.hset(key, rotation)
+        await rotationDb.updateRotation(rotation)
 
-        await slack.updateUserGroup(key, rotation.users)
+        await updateRotationOnSchedule(rotation)
         
-        replySuccess(res, "Scheduled "+JSON.stringify(data, function replacer(key, value) { return value})+" to rotation "+key)
+        replySuccess(res, "OK! Rotation "+key+" will rotate on "+rotation.next)
     } catch(err) {
         replyFailed(res, err)
     }    
 }
+
