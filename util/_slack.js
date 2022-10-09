@@ -57,33 +57,27 @@ export const slack = {
         }
         return userGroup.usergroup
     },
-    // getUserGroup: async function(name){
-    //     let result = undefined
-    //     if(this.userGroups[name]===undefined){
-    //         result = {ok:false, error:"usergroup doesn't exists"}
-    //     }
-
-    //     result = {ok:true, usergroup:this.userGroups[name]}
-    //     if (!result.ok)
-    //         return undefined
-    //     return result.usergroup
-    // },
-    // upsertUserGroup: async function (name, users){
-    //     let usergroup = await this.getUserGroup(name)
-
-    //     console.log("exists", JSON.stringify(usergroup))
-
-    //     if(usergroup===undefined) {
-    //         let usergroup = await slack.createUserGroup(name)
-    //         console.log("usergroup", JSON.stringify(usergroup))
-    //         if(usergroup===undefined)
-    //             throw "Couldn't create usergroup"
-    //     }
-
-    //     usergroup = await this.setUsersInUserGroup(name, users)
-
-    //     console.log('slack response', JSON.stringify(response))
-
-    //     return usergroup
-    // }
+    getUserGroup: async function (ugrup) {
+        const response = await fetch("https://slack.com/api/usergroups.list", {
+            method: "GET",
+            headers: {
+            'Content-Type': 'application/json; charset=utf-8',
+            'Authorization': 'Bearer '+token
+            },
+        });
+        const result = await response.json();
+        console.log(JSON.stringify(result));
+        if(!result.ok){
+            throw "Error getting usergroups. Error: "+userGroup.error
+        }
+        let usergroup = undefined
+        let parts = ugrup.split("|")
+        let uId = parts[0].substring(2,parts[0].length)
+        result.usergroups.forEach(element => {                
+            if(element.id == uId){
+                usergroup = element
+            }
+        });
+        return usergroup
+    }
 }

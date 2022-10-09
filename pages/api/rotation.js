@@ -6,7 +6,8 @@ import { listRotations } from "../../util/_list_rotations"
 import { schedule } from "../../util/_schedule"
 import { addUsers } from "../../util/addUsers"
 import { override } from "../../util/_override"
-import { updateRotationOnSchedule, updateRotationsOnSchedule } from "../../util/_update_on_schedule"
+import { updateRotationsOnSchedule } from "../../util/_update_on_schedule"
+import { remove } from "../../util/_remove"
 
 export default function handler(req, res) {
   const commandArray = tokenizeString(req.body.text)
@@ -34,6 +35,9 @@ export default function handler(req, res) {
       break
     case 'runUpdate':
       updateRotationsOnSchedule(res, args)
+      break
+    case 'remove':
+      remove(res, args)
       break
     default:
       res.send({
