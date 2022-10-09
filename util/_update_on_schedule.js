@@ -16,12 +16,12 @@ export async function updateRotationsOnSchedule(res, args) {
 
 export async function updateRotationOnSchedule(rotation) {
     console.log("checking rotation", rotation.active)
-    if(!(rotation.active === undefined)){
+    if(rotation.active !== undefined){
         console.log("rotation is active")
         //rotation is active, so update if needed
         let now = new Date()        
         let override = findActiveOverride(rotation, now)
-        if(!(override===undefined)){
+        if(override!==undefined){
             console.log('active override', JSON.stringify(override))
             console.log('usergroup', JSON.stringify(rotation.usergroup))
             //there's an active override, so use it
@@ -46,7 +46,7 @@ function findActiveOverride(rotation, now){
     let overrides = rotation.overrides
     console.log('overrides', overrides)
     let override = undefined
-    if(!(overrides === undefined)) {    
+    if(overrides !== undefined) {    
         overrides.forEach(element => {            
             let fromdate = new Date(element.fromdate)
             let todate = new Date(element.todate)

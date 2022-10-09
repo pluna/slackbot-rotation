@@ -23,9 +23,9 @@ export const rotationDb = {
         if(entries.length == 0)
             return undefined
         const p = redis.pipeline();
-            entries.forEach((id) => {
-              if(id==rotationName) p.hgetall(id);
-            });
+        entries.forEach((id) => {
+            if(id==rotationName) p.hgetall(id);
+        });
         const results = await p.exec();
         if(results.length==0){
             return undefined
@@ -50,7 +50,7 @@ export const rotationDb = {
             usergroup: JSON.stringify(usergroup),
         }
         let rotationExists = await rotationDb.rotationExists(name)
-        if(!rotationExists===undefined) {
+        if(rotationExists!==undefined) {
             throw "Rotation already exists"
         }        
         const redisData = await redis.hset(name, model)

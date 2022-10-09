@@ -20,7 +20,7 @@ export async function createRotation(res, commandArray) {
     try {
         //Error if rotation already exists.
         let rotationExists = await rotationDb.rotationExists(name)
-        if(!rotationExists===undefined) {
+        if(rotationExists!==undefined) {
             throw "Rotation already exists"
         }        
 

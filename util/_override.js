@@ -39,7 +39,7 @@ export async function override(res, args) {
         await rotationDb.updateRotation(rotation)
 
         //If rotation is live update if needed
-        if(!(rotation.active === undefined)) {
+        if(rotation.active !== undefined) {
             await updateRotationOnSchedule(rotation)
         }
             
